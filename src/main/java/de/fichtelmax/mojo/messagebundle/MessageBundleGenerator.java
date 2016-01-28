@@ -1,4 +1,4 @@
-package de.fichtelmax.mojo;
+package de.fichtelmax.mojo.messagebundle;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
