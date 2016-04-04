@@ -10,6 +10,7 @@ import com.sun.codemodel.JMod;
 import com.sun.codemodel.JPackage;
 
 import de.fichtelmax.mojo.messagebundle.model.MessageBundleInfo;
+import de.fichtelmax.mojo.messagebundle.model.MessagePropertyInfo;
 
 public class EnumGenerator {
 
@@ -23,8 +24,12 @@ public class EnumGenerator {
 		}
 		
 		try {
-			JDefinedClass definedClass = _package._class(JMod.PUBLIC, info.getName(), ClassType.ENUM);
-			System.out.println(definedClass.getClassType() == ClassType.ENUM);
+			JDefinedClass _class = _package._class(JMod.PUBLIC, info.getName(), ClassType.ENUM);
+			
+			for (MessagePropertyInfo propertyInfo: info.getPropertyInfos()) {
+				String enumConstantName = propertyInfo.getPropertyName().replaceAll("[^a-zA-Z0-9_]", "_").toUpperCase();
+				_class.enumConstant(enumConstantName);
+			}
 		} catch (JClassAlreadyExistsException e) {
 			throw new RuntimeException(e);
 		}
