@@ -6,6 +6,7 @@ import java.util.Collection;
 public class MessageBundleInfo {
 	private String packageName;
 	private String name;
+	private String bundleFileName;
 	private Collection<MessagePropertyInfo> propertyInfos = new ArrayList<>();
 
 	public String getName() {
@@ -30,5 +31,13 @@ public class MessageBundleInfo {
 
 	public void setPackageName(String packageName) {
 		this.packageName = packageName;
+	}
+
+	public String getBundleFileName() {
+		return bundleFileName;
+	}
+
+	public void setBundleFileName(String bundleFileName) {
+		this.bundleFileName = bundleFileName;
 	}
 }

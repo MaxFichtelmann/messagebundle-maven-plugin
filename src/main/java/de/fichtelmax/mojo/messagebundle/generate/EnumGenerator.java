@@ -1,5 +1,7 @@
 package de.fichtelmax.mojo.messagebundle.generate;
 
+import java.util.ResourceBundle;
+
 import org.apache.commons.lang3.StringUtils;
 
 import com.sun.codemodel.ClassType;
@@ -7,7 +9,6 @@ import com.sun.codemodel.JBlock;
 import com.sun.codemodel.JClassAlreadyExistsException;
 import com.sun.codemodel.JCodeModel;
 import com.sun.codemodel.JDefinedClass;
-import com.sun.codemodel.JEnumConstant;
 import com.sun.codemodel.JExpr;
 import com.sun.codemodel.JFieldVar;
 import com.sun.codemodel.JMethod;
@@ -19,6 +20,8 @@ import de.fichtelmax.mojo.messagebundle.model.MessageBundleInfo;
 import de.fichtelmax.mojo.messagebundle.model.MessagePropertyInfo;
 
 public class EnumGenerator {
+
+	private EnumPropertyGenerator propertyGenerator = new EnumPropertyGenerator();
 
 	public void transformToEnumInfo(MessageBundleInfo info, JCodeModel codeModel) {
 		JPackage _package;
@@ -35,23 +38,25 @@ public class EnumGenerator {
 			JFieldVar propertyNameField = _class.field(JMod.PRIVATE, String.class, "propertyName");
 			generateConstructor(_class, propertyNameField);
 			generatePropertyNameGetter(_class, propertyNameField);
+			generateBundleField(_class, info);
 
 			if (null == info.getPropertyInfos() || info.getPropertyInfos().isEmpty()) {
-				generateEnumConstant(_class, "DUMMY");
+				propertyGenerator.generateDummyEnumConstant(_class);
 			}
 
 			for (MessagePropertyInfo propertyInfo : info.getPropertyInfos()) {
-				generateEnumConstant(_class, propertyInfo.getPropertyName());
+				propertyGenerator.generateEnumConstant(propertyInfo, _class);
 			}
 		} catch (JClassAlreadyExistsException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	private void generateEnumConstant(JDefinedClass _class, String propertyName) {
-		String enumConstantName = propertyName.replaceAll("[^a-zA-Z0-9_]", "_").toUpperCase();
-		JEnumConstant enumConstant = _class.enumConstant(enumConstantName);
-		enumConstant.arg(JExpr.lit(propertyName));
+	private void generateBundleField(JDefinedClass _class, MessageBundleInfo info) {
+		JFieldVar bundleField = _class.field(JMod.PRIVATE | JMod.STATIC | JMod.FINAL, ResourceBundle.class, "_BUNDLE");
+
+		bundleField.init(JExpr.direct(
+				"ResourceBundle.getBundle(\"" + info.getBundleFileName().replaceAll("\\.properties$", "") + "\")"));
 	}
 
 	private void generatePropertyNameGetter(JDefinedClass _class, JFieldVar propertyNameField) {
