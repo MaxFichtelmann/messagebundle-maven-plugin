@@ -182,6 +182,69 @@ public class EnumGeneratorTest {
 		assertThat(bundle, is(instanceOf(ResourceBundle.class)));
 	}
 
+	@Test
+	public void unparameterizedShouldBeRendered() throws Exception {
+		String name = SOME_CLASS_NAME;
+		String propertyName = "foo";
+		String propertyValue = "a test value";
+
+		Properties props = new Properties();
+		props.setProperty(propertyName, propertyValue);
+
+		MessageBundleInfo info = new MessageBundleInfo();
+		info.setBundleFileName(SOME_BUNDLE_FILENAME);
+		info.setName(name);
+		MessagePropertyInfo propertyInfo = new MessagePropertyInfo();
+		propertyInfo.setPropertyName(propertyName);
+		info.setPropertyInfos(Collections.singleton(propertyInfo));
+
+		JCodeModel codeModel = new JCodeModel();
+		cut.transformToEnumInfo(info, codeModel);
+
+		codeModel.build(dir);
+		Compiler.compile(name, dir);
+		Compiler.createProperties(info.getBundleFileName(), props, dir);
+		Class<?> barClass = Compiler.loadClass(name, dir);
+		Method renderMethod = barClass.getMethod("render", Object[].class);
+
+		Object fooEnumConstant = barClass.getEnumConstants()[0];
+		String renderedString = (String) renderMethod.invoke(fooEnumConstant, (Object) new Object[0]);
+
+		assertThat(renderedString, is(equalTo(propertyValue)));
+	}
+
+	@Test
+	public void parameterizedShouldBeRendered() throws Exception {
+		String name = SOME_CLASS_NAME;
+		String propertyName = "foo";
+		String propertyValue = "{0}";
+		String renderValue = "some value";
+
+		Properties props = new Properties();
+		props.setProperty(propertyName, propertyValue);
+
+		MessageBundleInfo info = new MessageBundleInfo();
+		info.setBundleFileName(SOME_BUNDLE_FILENAME);
+		info.setName(name);
+		MessagePropertyInfo propertyInfo = new MessagePropertyInfo();
+		propertyInfo.setPropertyName(propertyName);
+		info.setPropertyInfos(Collections.singleton(propertyInfo));
+
+		JCodeModel codeModel = new JCodeModel();
+		cut.transformToEnumInfo(info, codeModel);
+
+		codeModel.build(dir);
+		Compiler.compile(name, dir);
+		Compiler.createProperties(info.getBundleFileName(), props, dir);
+		Class<?> barClass = Compiler.loadClass(name, dir);
+		Method renderMethod = barClass.getMethod("render", Object[].class);
+
+		Object fooEnumConstant = barClass.getEnumConstants()[0];
+		String renderedString = (String) renderMethod.invoke(fooEnumConstant, (Object) new Object[] { renderValue });
+
+		assertThat(renderedString, is(equalTo(renderValue)));
+	}
+
 	private Properties props(String key) {
 		Properties properties = new Properties();
 		properties.setProperty(key, "value for " + key);

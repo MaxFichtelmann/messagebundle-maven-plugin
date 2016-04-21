@@ -1,5 +1,6 @@
 package de.fichtelmax.mojo.messagebundle.generate;
 
+import java.text.MessageFormat;
 import java.util.ResourceBundle;
 
 import org.apache.commons.lang3.StringUtils;
@@ -11,6 +12,7 @@ import com.sun.codemodel.JCodeModel;
 import com.sun.codemodel.JDefinedClass;
 import com.sun.codemodel.JExpr;
 import com.sun.codemodel.JFieldVar;
+import com.sun.codemodel.JInvocation;
 import com.sun.codemodel.JMethod;
 import com.sun.codemodel.JMod;
 import com.sun.codemodel.JPackage;
@@ -38,7 +40,8 @@ public class EnumGenerator {
 			JFieldVar propertyNameField = _class.field(JMod.PRIVATE, String.class, "propertyName");
 			generateConstructor(_class, propertyNameField);
 			generatePropertyNameGetter(_class, propertyNameField);
-			generateBundleField(_class, info);
+			JFieldVar bundleField = generateBundleField(_class, info);
+			generateRenderMethod(_class, bundleField, propertyNameField, codeModel);
 
 			if (null == info.getPropertyInfos() || info.getPropertyInfos().isEmpty()) {
 				propertyGenerator.generateDummyEnumConstant(_class);
@@ -52,11 +55,26 @@ public class EnumGenerator {
 		}
 	}
 
-	private void generateBundleField(JDefinedClass _class, MessageBundleInfo info) {
+	private void generateRenderMethod(JDefinedClass _class, JFieldVar bundle, JFieldVar nameField,
+			JCodeModel codeModel) {
+		JMethod renderMethod = _class.method(JMod.PUBLIC, String.class, "render");
+		JVar renderParameters = renderMethod.varParam(Object.class, "parameters");
+		JBlock methodBody = renderMethod.body();
+
+		JInvocation template = JExpr.invoke(bundle, "getString").arg(nameField);
+		JInvocation body = codeModel.ref(MessageFormat.class).staticInvoke("format").arg(template)
+				.arg(renderParameters);
+
+		methodBody._return(body);
+	}
+
+	private JFieldVar generateBundleField(JDefinedClass _class, MessageBundleInfo info) {
 		JFieldVar bundleField = _class.field(JMod.PRIVATE | JMod.STATIC | JMod.FINAL, ResourceBundle.class, "_BUNDLE");
 
 		bundleField.init(JExpr.direct(
 				"ResourceBundle.getBundle(\"" + info.getBundleFileName().replaceAll("\\.properties$", "") + "\")"));
+
+		return bundleField;
 	}
 
 	private void generatePropertyNameGetter(JDefinedClass _class, JFieldVar propertyNameField) {
