@@ -21,6 +21,13 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.puppycrawl.tools.checkstyle.Checker;
+import com.puppycrawl.tools.checkstyle.DefaultConfiguration;
+import com.puppycrawl.tools.checkstyle.DefaultLogger;
+import com.puppycrawl.tools.checkstyle.TreeWalker;
+import com.puppycrawl.tools.checkstyle.api.AbstractCheck;
+import com.puppycrawl.tools.checkstyle.api.CheckstyleException;
+import com.puppycrawl.tools.checkstyle.checks.javadoc.JavadocTypeCheck;
 import com.sun.codemodel.JCodeModel;
 
 import de.fichtelmax.mojo.messagebundle.model.MessageBundleInfo;
@@ -243,6 +250,46 @@ public class EnumGeneratorTest {
 		String renderedString = (String) renderMethod.invoke(fooEnumConstant, (Object) new Object[] { renderValue });
 
 		assertThat(renderedString, is(equalTo(renderValue)));
+	}
+	
+	@Test
+	public void classInfoShouldHaveClassJavadoc() throws Exception {
+		String name = "Foo";
+
+		MessageBundleInfo info = new MessageBundleInfo();
+		info.setBundleFileName(SOME_BUNDLE_FILENAME);
+		info.setName(name);
+
+		JCodeModel codeModel = new JCodeModel();
+		cut.transformToEnumInfo(info, codeModel);
+
+		codeModel.build(dir);
+		
+		Checker checker = createChecker(JavadocTypeCheck.class);
+		
+		int result = checker.process(Collections.singletonList(new File(dir, name + ".java")));
+		
+		assertThat(result, is(0));
+	}
+	
+	private Checker createChecker(Class<? extends AbstractCheck> checkType) throws CheckstyleException {
+		DefaultConfiguration root = new DefaultConfiguration("configuration");
+		root.addAttribute("charset", "UTF-8");
+		
+		DefaultConfiguration config = new DefaultConfiguration(checkType.getName());
+		DefaultConfiguration twConfig = new DefaultConfiguration(TreeWalker.class.getName());
+		
+		twConfig.addChild(config);
+		root.addChild(twConfig);
+		
+		
+		Checker checker = new Checker();
+		checker.setModuleClassLoader(Thread.currentThread().getContextClassLoader());
+		
+		checker.configure(root);
+		checker.addListener(new DefaultLogger(stdout, false));
+		
+		return checker;
 	}
 
 	private Properties props(String key) {

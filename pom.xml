@@ -46,5 +46,11 @@
 			<version>1.3</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.puppycrawl.tools</groupId>
+			<artifactId>checkstyle</artifactId>
+			<version>6.17</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 </project>

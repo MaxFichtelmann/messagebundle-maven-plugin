@@ -10,6 +10,7 @@ import com.sun.codemodel.JBlock;
 import com.sun.codemodel.JClassAlreadyExistsException;
 import com.sun.codemodel.JCodeModel;
 import com.sun.codemodel.JDefinedClass;
+import com.sun.codemodel.JDocComment;
 import com.sun.codemodel.JExpr;
 import com.sun.codemodel.JFieldVar;
 import com.sun.codemodel.JInvocation;
@@ -36,6 +37,9 @@ public class EnumGenerator {
 
 		try {
 			JDefinedClass _class = _package._class(JMod.PUBLIC, info.getName(), ClassType.ENUM);
+			JDocComment typeJavaDoc = _class.javadoc();
+			typeJavaDoc.add("A generated enum that wraps the {@link ResourceBundle} for " + info.getName() + '.');
+			
 
 			JFieldVar propertyNameField = _class.field(JMod.PRIVATE, String.class, "propertyName");
 			generateConstructor(_class, propertyNameField);
