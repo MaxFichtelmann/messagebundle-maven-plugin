@@ -70,6 +70,12 @@ public class EnumGenerator {
 				.arg(renderParameters);
 
 		methodBody._return(body);
+		
+		JDocComment javadoc = renderMethod.javadoc();
+		javadoc.add("Render the message by turning the value in the {@link ResourceBundle} "
+				+ "into a {@link MessageFormat} and formatting it using the provided parameters.");
+		javadoc.addParam(renderParameters).add("the parameters that should be used during formatting");
+		javadoc.addReturn().add("the formatted String.");
 	}
 
 	private JFieldVar generateBundleField(JDefinedClass _class, MessageBundleInfo info) {
@@ -84,6 +90,10 @@ public class EnumGenerator {
 	private void generatePropertyNameGetter(JDefinedClass _class, JFieldVar propertyNameField) {
 		JMethod propertyNameGetter = _class.method(JMod.PUBLIC, String.class, "getPropertyName");
 		propertyNameGetter.body()._return(propertyNameField);
+		
+		JDocComment javadoc = propertyNameGetter.javadoc();
+		javadoc.add("Returns the property name in the {@link ResourceBundle} this refers to.");
+		javadoc.addReturn().add("the property name in the {@link ResourceBundle} this refers to.");
 	}
 
 	private void generateConstructor(JDefinedClass _class, JFieldVar nameField) {
@@ -91,5 +101,9 @@ public class EnumGenerator {
 		JVar param = constructor.param(String.class, "propertyName");
 		JBlock body = constructor.body();
 		body.assign(JExpr._this().ref(nameField), param);
+		
+		JDocComment javadoc = constructor.javadoc();
+		javadoc.add("Create the enum constant with the given property key.");
+		javadoc.addParam(param).add("the name of the property the created enum constant refers to");
 	}
 }

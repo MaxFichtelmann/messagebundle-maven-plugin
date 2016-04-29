@@ -27,6 +27,7 @@ import com.puppycrawl.tools.checkstyle.DefaultLogger;
 import com.puppycrawl.tools.checkstyle.TreeWalker;
 import com.puppycrawl.tools.checkstyle.api.AbstractCheck;
 import com.puppycrawl.tools.checkstyle.api.CheckstyleException;
+import com.puppycrawl.tools.checkstyle.checks.javadoc.JavadocMethodCheck;
 import com.puppycrawl.tools.checkstyle.checks.javadoc.JavadocTypeCheck;
 import com.sun.codemodel.JCodeModel;
 
@@ -266,6 +267,26 @@ public class EnumGeneratorTest {
 		codeModel.build(dir);
 		
 		Checker checker = createChecker(JavadocTypeCheck.class);
+		
+		int result = checker.process(Collections.singletonList(new File(dir, name + ".java")));
+		
+		assertThat(result, is(0));
+	}
+	
+	@Test
+	public void methodsShouldHaveClassJavadoc() throws Exception {
+		String name = "Foo";
+
+		MessageBundleInfo info = new MessageBundleInfo();
+		info.setBundleFileName(SOME_BUNDLE_FILENAME);
+		info.setName(name);
+
+		JCodeModel codeModel = new JCodeModel();
+		cut.transformToEnumInfo(info, codeModel);
+
+		codeModel.build(dir);
+		
+		Checker checker = createChecker(JavadocMethodCheck.class);
 		
 		int result = checker.process(Collections.singletonList(new File(dir, name + ".java")));
 		
