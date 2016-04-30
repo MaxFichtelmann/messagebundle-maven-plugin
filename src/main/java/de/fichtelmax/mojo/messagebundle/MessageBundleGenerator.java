@@ -12,6 +12,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
 
 import com.sun.codemodel.JCodeModel;
@@ -33,6 +34,9 @@ public class MessageBundleGenerator extends AbstractMojo {
 
 	@Parameter(defaultValue = "messages")
 	private String packageName;
+
+	@Parameter(defaultValue = "${project}", readonly = true)
+	private MavenProject project;
 
 	private EnumGenerator generator = new EnumGenerator();
 	private MessageResourceParser parser = new MessageResourceParser();
@@ -60,11 +64,13 @@ public class MessageBundleGenerator extends AbstractMojo {
 
 		try {
 			codeModel.build(outputDirectory);
+			project.addCompileSourceRoot(outputDirectory.getPath());
 		} catch (IOException e) {
 			throw new MojoFailureException("failed to write compiled files: " + e.getMessage(), e);
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private List<File> collectFiles() throws MojoExecutionException {
 		if (fileset.getIncludes().isEmpty()) {
 			fileset.addInclude("messages/**/*.properties");
