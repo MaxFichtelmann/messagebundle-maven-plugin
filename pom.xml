@@ -18,6 +18,25 @@
 		</license>
 	</licenses>
 
+	<scm>
+		<url>https://github.com/MaxFichtelmann/messagebundle-maven-plugin</url>
+		<connection>scm:git:git://github.com/MaxFichtelmann/messagebundle-maven-plugin.git</connection>
+		<developerConnection>scm:git:git@github.com:MaxFichtelmann/messagebundle-maven-plugin.git</developerConnection>
+	</scm>
+
+	<issueManagement>
+		<url>https://github.com/MaxFichtelmann/messagebundle-maven-plugin</url>
+		<system>GitHub Issues</system>
+	</issueManagement>
+	
+	<developers>
+		<developer>
+			<name>Max Fichtelmann</name>
+			<email>max.fichtelmann@gmail.com</email>
+			<url>https://github.com/MaxFichtelmann</url>
+		</developer>
+	</developers>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.maven</groupId>
