@@ -13,6 +13,8 @@ import java.io.PrintStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Collections;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.ResourceBundle;
 
@@ -29,6 +31,7 @@ import com.puppycrawl.tools.checkstyle.api.AbstractCheck;
 import com.puppycrawl.tools.checkstyle.api.CheckstyleException;
 import com.puppycrawl.tools.checkstyle.checks.javadoc.JavadocMethodCheck;
 import com.puppycrawl.tools.checkstyle.checks.javadoc.JavadocTypeCheck;
+import com.puppycrawl.tools.checkstyle.checks.javadoc.JavadocVariableCheck;
 import com.sun.codemodel.JCodeModel;
 
 import de.fichtelmax.mojo.messagebundle.model.MessageBundleInfo;
@@ -252,7 +255,7 @@ public class EnumGeneratorTest {
 
 		assertThat(renderedString, is(equalTo(renderValue)));
 	}
-	
+
 	@Test
 	public void classInfoShouldHaveClassJavadoc() throws Exception {
 		String name = "Foo";
@@ -265,16 +268,16 @@ public class EnumGeneratorTest {
 		cut.transformToEnumInfo(info, codeModel);
 
 		codeModel.build(dir);
-		
+
 		Checker checker = createChecker(JavadocTypeCheck.class);
-		
+
 		int result = checker.process(Collections.singletonList(new File(dir, name + ".java")));
-		
+
 		assertThat(result, is(0));
 	}
-	
+
 	@Test
-	public void methodsShouldHaveClassJavadoc() throws Exception {
+	public void methodsShouldHaveJavadoc() throws Exception {
 		String name = "Foo";
 
 		MessageBundleInfo info = new MessageBundleInfo();
@@ -285,31 +288,69 @@ public class EnumGeneratorTest {
 		cut.transformToEnumInfo(info, codeModel);
 
 		codeModel.build(dir);
-		
+
 		Checker checker = createChecker(JavadocMethodCheck.class);
-		
+
 		int result = checker.process(Collections.singletonList(new File(dir, name + ".java")));
-		
+
 		assertThat(result, is(0));
 	}
-	
+
+	@Test
+	public void enumConstantsShouldHaveJavadoc() throws Exception {
+		String name = "Foo";
+		String propertyName = "foo";
+		String propertyName2 = "bar";
+
+		MessageBundleInfo info = new MessageBundleInfo();
+		info.setBundleFileName(SOME_BUNDLE_FILENAME);
+		info.setName(name);
+		MessagePropertyInfo propertyInfo = new MessagePropertyInfo();
+		propertyInfo.setPropertyName(propertyName);
+		propertyInfo.setValue("value of foo");
+		info.getPropertyInfos().add(propertyInfo);
+		propertyInfo = new MessagePropertyInfo();
+		propertyInfo.setPropertyName(propertyName2);
+		propertyInfo.setValue("value of bar: {0} {1}");
+		info.getPropertyInfos().add(propertyInfo);
+
+		JCodeModel codeModel = new JCodeModel();
+		cut.transformToEnumInfo(info, codeModel);
+
+		codeModel.build(dir);
+
+		Checker checker = createChecker(JavadocVariableCheck.class, Collections.singletonMap("scope", "public"));
+
+		int result = checker.process(Collections.singletonList(new File(dir, name + ".java")));
+
+		assertThat(result, is(0));
+	}
+
 	private Checker createChecker(Class<? extends AbstractCheck> checkType) throws CheckstyleException {
+		return createChecker(checkType, Collections.<String, String> emptyMap());
+	}
+
+	private Checker createChecker(Class<? extends AbstractCheck> checkType, Map<String, String> properties)
+			throws CheckstyleException {
 		DefaultConfiguration root = new DefaultConfiguration("configuration");
 		root.addAttribute("charset", "UTF-8");
-		
+
 		DefaultConfiguration config = new DefaultConfiguration(checkType.getName());
 		DefaultConfiguration twConfig = new DefaultConfiguration(TreeWalker.class.getName());
-		
+
 		twConfig.addChild(config);
 		root.addChild(twConfig);
-		
-		
+
+		for (Entry<String, String> property : properties.entrySet()) {
+			config.addAttribute(property.getKey(), property.getValue());
+		}
+
 		Checker checker = new Checker();
 		checker.setModuleClassLoader(Thread.currentThread().getContextClassLoader());
-		
+
 		checker.configure(root);
 		checker.addListener(new DefaultLogger(stdout, false));
-		
+
 		return checker;
 	}
 

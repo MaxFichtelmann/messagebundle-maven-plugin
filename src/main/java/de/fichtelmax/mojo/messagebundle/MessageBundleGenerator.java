@@ -46,8 +46,12 @@ public class MessageBundleGenerator extends AbstractMojo {
 
 		JCodeModel codeModel = new JCodeModel();
 		for (File file : collectFiles()) {
+			if (file.getName().matches(".*_[a-zA-Z]{2}(?:-[a-zA-Z]{2})?\\.properties$")) {
+				continue;
+			}
 			try {
 				MessageBundleInfo bundleInfo = parser.parse(sourceDir, file);
+				bundleInfo.setPackageName(packageName);
 				generator.transformToEnumInfo(bundleInfo, codeModel);
 
 			} catch (IOException e) {

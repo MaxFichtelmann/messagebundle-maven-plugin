@@ -31,6 +31,7 @@ public class MessageResourceParser {
 			for (String property : properties.stringPropertyNames()) {
 				MessagePropertyInfo propertyInfo = new MessagePropertyInfo();
 				propertyInfo.setPropertyName(property);
+				propertyInfo.setValue(properties.getProperty(property));
 
 				info.getPropertyInfos().add(propertyInfo);
 			}
