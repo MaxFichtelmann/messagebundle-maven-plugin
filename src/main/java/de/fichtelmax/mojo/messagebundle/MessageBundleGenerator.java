@@ -23,14 +23,13 @@ import de.fichtelmax.mojo.messagebundle.model.MessageBundleInfo;
 @Mojo(name = "generate", defaultPhase = LifecyclePhase.GENERATE_SOURCES)
 public class MessageBundleGenerator extends AbstractMojo {
 
+	private static final String DEFAULT_RESOURCE_DIR = "src/main/resources";
+
 	@Parameter
 	private FileSet fileset = new FileSet();
 
 	@Parameter(defaultValue = "${project.build.directory}/generated-sources/message-bundles")
 	private File outputDirectory;
-
-	@Parameter(defaultValue = "src/main/resources")
-	private File baseDir;
 
 	@Parameter(defaultValue = "messages")
 	private String packageName;
@@ -73,7 +72,7 @@ public class MessageBundleGenerator extends AbstractMojo {
 		String includes = StringUtils.join(fileset.getIncludes(), ',');
 		String excludes = StringUtils.join(fileset.getExcludes(), ',');
 		if (StringUtils.isBlank(fileset.getDirectory())) {
-			fileset.setDirectory(baseDir.getPath());
+			fileset.setDirectory(DEFAULT_RESOURCE_DIR);
 		}
 		String directory = fileset.getDirectory();
 		try {
@@ -88,7 +87,7 @@ public class MessageBundleGenerator extends AbstractMojo {
 		if (StringUtils.isNotBlank(directory)) {
 			return new File(directory);
 		} else {
-			return baseDir;
+			return new File(DEFAULT_RESOURCE_DIR);
 		}
 	}
 }
