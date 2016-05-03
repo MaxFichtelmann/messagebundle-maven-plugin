@@ -145,4 +145,7 @@
 			</build>
 		</profile>
 	</profiles>
+	<name>messagebundle-maven-plugin</name>
+	<url>https://github.com/MaxFichtelmann/messagebundle-maven-plugin</url>
+	<description>A Maven plugin that generates enumerations for message bundles</description>
 </project>
