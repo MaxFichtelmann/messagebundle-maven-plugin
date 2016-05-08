@@ -142,6 +142,22 @@ public class PropertyParserTest {
 		assertThat(info.getPropertyName(), is("foo€€"));
 		assertThat(info.getValue(), is("bar"));
 	}
+	
+	@Test
+	public void unescapeEscapeSequences() throws Exception {
+		String content = "foo\\t\\r\\n\\ffoo=bar";
+
+		InputStream data = IOUtils.toInputStream(content, StandardCharsets.US_ASCII);
+
+		Collection<MessagePropertyInfo> infos = new PropertyParser().parse(data);
+
+		assertThat(infos, hasSize(1));
+
+		MessagePropertyInfo info = infos.iterator().next();
+
+		assertThat(info.getPropertyName(), is("foo\t\r\n\ffoo"));
+		assertThat(info.getValue(), is("bar"));
+	}
 
 	@Test
 	public void parseDescriptionFromComment() throws Exception {

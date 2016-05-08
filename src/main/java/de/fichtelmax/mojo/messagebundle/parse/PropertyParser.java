@@ -15,124 +15,182 @@ public class PropertyParser {
 	private static final char[] COMMENT_CHARS = { '#', '!' };
 	private static final char[] LINE_BREAK = { '\n', '\r' };
 
-	public Collection<MessagePropertyInfo> parse(InputStream data) throws IOException {
-		Collection<MessagePropertyInfo> infos = new ArrayList<>();
+	private class State {
 		StringBuilder line = new StringBuilder();
 		boolean precedingBackslash = false;
 		boolean newLine = true;
 		boolean isCommentLine = false;
 		boolean skipLinefeed = false;
 		boolean skipWhitespace = true;
-		byte[] buffer = new byte[8192];
 		int index = 0;
 		int limit = 0;
 		int unicode = 0;
 		int unicodeIndex = -1;
-		MessagePropertyInfo info = new MessagePropertyInfo();
 		StringBuilder description = new StringBuilder();
+		char c;
+	}
 
+	public Collection<MessagePropertyInfo> parse(InputStream data) throws IOException {
+		Collection<MessagePropertyInfo> infos = new ArrayList<>();
+
+		byte[] buffer = new byte[8192];
+		MessagePropertyInfo info = new MessagePropertyInfo();
+
+		State state = new State();
 		while (true) {
-			limit = data.read(buffer);
-			if (limit < 0) {
+			state.limit = data.read(buffer);
+			if (state.limit < 0) {
 				break;
 			}
 
-			while (index < limit) {
-				char c = (char) (0xff & buffer[index++]);
-				if (skipLinefeed) {
-					skipLinefeed = false;
-					if (c == '\n') {
+			while (state.index < state.limit) {
+				state.c = (char) (0xff & buffer[state.index++]);
+				if (handleSkipLinefeed(state)) {
+					continue;
+				}
+				if (handleSkipWhitespace(state)) {
+					continue;
+				}
+				if (handleNewLine(state)) {
+					continue;
+				}
+				if (!ArrayUtils.contains(LINE_BREAK, state.c)) {
+					if (buildUpUnicode(state)) {
 						continue;
 					}
-				}
-				if (skipWhitespace) {
-					if (ArrayUtils.contains(WHITESPACE, c)) {
-						continue;
-					}
-					skipWhitespace = false;
-				}
-				if (newLine) {
-					newLine = false;
-					if (ArrayUtils.contains(COMMENT_CHARS, c)) {
-						isCommentLine = true;
-						skipWhitespace = true;
-						continue;
-					}
-				}
-				if (!ArrayUtils.contains(LINE_BREAK, c)) {
-					if (unicodeIndex >= 0) {
-						unicode |= toUnicodeHalfByte(c) << 4 * (4 - ++unicodeIndex);
-						if (unicodeIndex == 4) {
-							c = (char) unicode;
-							unicodeIndex = -1;
-							unicode = 0;
-						} else {
-							continue;
-						}
-					}
+					unescapeEscapedValue(state);
+					handleBackslashState(state);
 
-					if (precedingBackslash) {
-						if (c == 'u') {
-							unicodeIndex = 0;
-							continue;
-						}
-						switch (c) {
-						case 't':
-							c = '\t';
-							break;
-						case 'r':
-							c = '\r';
-							break;
-						case 'n':
-							c = '\n';
-							break;
-						case 'f':
-							c = '\f';
-							break;
-						}
+					if (!state.precedingBackslash) {
+						state.line.append(state.c);
 					}
-					if (c == '\\') {
-						precedingBackslash = !precedingBackslash;
-					} else {
-						precedingBackslash = false;
-					}
-					if (!precedingBackslash) {
-						line.append(c);
-					}
-
 				} else {
-					if (line.length() > 0) {
-						String content = line.toString();
-						if (isCommentLine) {
-							if (description.length() > 0) {
-								description.append('\n');
-							}
-							description.append(content);
+					if (state.line.length() > 0) {
+						String content = state.line.toString();
+						if (state.isCommentLine) {
+							appendComment(state, content);
 						} else {
-							if (precedingBackslash) {
-								skipWhitespace = true;
-								precedingBackslash = false;
-								skipLinefeed = true;
+							if (state.precedingBackslash) {
+								resetStateForEscapedBaskslash(state);
 								continue;
 							}
-							addKeyValueData(info, content, description);
+							addKeyValueData(info, content, state.description);
 							infos.add(info);
 							info = new MessagePropertyInfo();
 						}
-						line.setLength(0);
+						state.line.setLength(0);
 					}
-					isCommentLine = false;
-					newLine = true;
-					skipWhitespace = true;
+					resetStateForNextLine(state);
 				}
 			}
 		}
-		if (!isCommentLine && line.length() > 0) {
-			addKeyValueData(info, line.toString(), description);
+		if (!state.isCommentLine && state.line.length() > 0) {
+			addKeyValueData(info, state.line.toString(), state.description);
 			infos.add(info);
 		}
 
 		return infos;
+	}
+
+	private void resetStateForNextLine(State state) {
+		state.isCommentLine = false;
+		state.newLine = true;
+		state.skipWhitespace = true;
+	}
+
+	private void appendComment(State state, String content) {
+		if (state.description.length() > 0) {
+			state.description.append('\n');
+		}
+		state.description.append(content);
+	}
+
+	private boolean handleSkipLinefeed(State state) {
+		if (state.skipLinefeed) {
+			state.skipLinefeed = false;
+			if (state.c == '\n') {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private boolean handleSkipWhitespace(State state) {
+		if (state.skipWhitespace) {
+			if (ArrayUtils.contains(WHITESPACE, state.c)) {
+				return true;
+			}
+			state.skipWhitespace = false;
+		}
+
+		return false;
+	}
+
+	private boolean handleNewLine(State state) {
+		if (state.newLine) {
+			state.newLine = false;
+			if (ArrayUtils.contains(COMMENT_CHARS, state.c)) {
+				state.isCommentLine = true;
+				state.skipWhitespace = true;
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private void handleBackslashState(State state) {
+		if (state.c == '\\') {
+			state.precedingBackslash = !state.precedingBackslash;
+		} else {
+			state.precedingBackslash = false;
+		}
+	}
+
+	private boolean buildUpUnicode(State state) {
+		if (state.unicodeIndex >= 0) {
+			state.unicode |= toUnicodeHalfByte(state.c) << 4 * (4 - ++state.unicodeIndex);
+			if (state.unicodeIndex == 4) {
+				state.c = (char) state.unicode;
+				state.unicodeIndex = -1;
+				state.unicode = 0;
+			} else {
+				return true;
+			}
+		}
+
+		if (state.precedingBackslash && state.c == 'u') {
+			state.unicodeIndex = 0;
+			return true;
+		}
+
+		return false;
+	}
+
+	private void unescapeEscapedValue(State state) {
+		if (state.precedingBackslash) {
+			switch (state.c) {
+			case 't':
+				state.c = '\t';
+				break;
+			case 'r':
+				state.c = '\r';
+				break;
+			case 'n':
+				state.c = '\n';
+				break;
+			case 'f':
+				state.c = '\f';
+				break;
+			}
+		}
+	}
+	
+	private void resetStateForEscapedBaskslash(State state) {
+			state.skipWhitespace = true;
+			state.precedingBackslash = false;
+			state.skipLinefeed = true;
 	}
 
 	private void addKeyValueData(MessagePropertyInfo info, String content, StringBuilder description) {
