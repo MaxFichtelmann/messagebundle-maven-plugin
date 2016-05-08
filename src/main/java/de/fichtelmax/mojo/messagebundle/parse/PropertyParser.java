@@ -29,6 +29,7 @@ public class PropertyParser {
 		int unicode = 0;
 		int unicodeIndex = -1;
 		MessagePropertyInfo info = new MessagePropertyInfo();
+		StringBuilder description = new StringBuilder();
 
 		while (true) {
 			limit = data.read(buffer);
@@ -54,6 +55,7 @@ public class PropertyParser {
 					newLine = false;
 					if (ArrayUtils.contains(COMMENT_CHARS, c)) {
 						isCommentLine = true;
+						skipWhitespace = true;
 						continue;
 					}
 				}
@@ -102,15 +104,18 @@ public class PropertyParser {
 					if (line.length() > 0) {
 						String content = line.toString();
 						if (isCommentLine) {
-							// TODO extract meta-info from comment
+							if (description.length() > 0) {
+								description.append('\n');
+							}
+							description.append(content);
 						} else {
 							if (precedingBackslash) {
 								skipWhitespace = true;
 								precedingBackslash = false;
-								skipLinefeed=true;
+								skipLinefeed = true;
 								continue;
 							}
-							addKeyValueData(info, content);
+							addKeyValueData(info, content, description);
 							infos.add(info);
 							info = new MessagePropertyInfo();
 						}
@@ -123,14 +128,14 @@ public class PropertyParser {
 			}
 		}
 		if (!isCommentLine && line.length() > 0) {
-			addKeyValueData(info, line.toString());
+			addKeyValueData(info, line.toString(), description);
 			infos.add(info);
 		}
 
 		return infos;
 	}
 
-	private void addKeyValueData(MessagePropertyInfo info, String content) {
+	private void addKeyValueData(MessagePropertyInfo info, String content, StringBuilder description) {
 		int equalsIndex = content.indexOf('=');
 		int colonIndex = content.indexOf(':');
 		String separator;
@@ -146,6 +151,11 @@ public class PropertyParser {
 
 		info.setPropertyName(key);
 		info.setValue(value);
+
+		if (description.length() > 0) {
+			info.setDescription(description.toString());
+			description.setLength(0);
+		}
 	}
 
 	private static int toUnicodeHalfByte(char c) {
