@@ -20,8 +20,8 @@ import org.sonatype.plexus.build.incremental.BuildContext;
 import com.sun.codemodel.JCodeModel;
 
 import de.fichtelmax.mojo.messagebundle.generate.EnumGenerator;
-import de.fichtelmax.mojo.messagebundle.generate.MessageResourceParser;
 import de.fichtelmax.mojo.messagebundle.model.MessageBundleInfo;
+import de.fichtelmax.mojo.messagebundle.parse.MessageResourceParser;
 
 @Mojo(name = "generate", defaultPhase = LifecyclePhase.GENERATE_SOURCES)
 public class MessageBundleGenerator extends AbstractMojo {
