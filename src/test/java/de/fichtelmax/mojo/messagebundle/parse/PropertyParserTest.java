@@ -96,6 +96,22 @@ public class PropertyParserTest {
 	}
 	
 	@Test
+	public void escapedCarriageReturnLinefeed() throws Exception {
+		String content = "line1\\\r\nline2=bar";
+		
+		InputStream data = IOUtils.toInputStream(content, StandardCharsets.US_ASCII);
+		
+		Collection<MessagePropertyInfo> infos = new PropertyParser().parse(data);
+		
+		assertThat(infos, hasSize(1));
+		
+		MessagePropertyInfo info = infos.iterator().next();
+		
+		assertThat(info.getPropertyName(), is("line1line2"));
+		assertThat(info.getValue(), is("bar"));
+	}
+	
+	@Test
 	public void skipWhitespaceAfterEscapedNewline() throws Exception {
 		String content = "foo\\\n \t\fbar=bar";
 		
