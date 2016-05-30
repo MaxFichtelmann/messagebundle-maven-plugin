@@ -8,9 +8,9 @@ A Maven plugin that generates enumerations for message bundles
 		<plugins>
 			[...]
 			<plugin>
-				<groupId>de.fichtelmax</groupId>
+				<groupId>com.github.maxfichtelmann</groupId>
 				<artifactId>messagebundle-maven-plugin</artifactId>
-				<version>1.0.0</version>
+				<version>1.1.0</version>
 				<executions>
 					<execution>
 						<phase>generate-sources</phase>
