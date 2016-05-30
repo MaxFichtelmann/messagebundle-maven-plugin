@@ -21,7 +21,23 @@ public class PropertyParserTest {
 
 		InputStream data = IOUtils.toInputStream(content, StandardCharsets.US_ASCII);
 
-		Collection<MessagePropertyInfo> infos = new PropertyParser().parse(data);
+		Collection<MessagePropertyInfo> infos = new AntlrBasedParser().parse(data);
+
+		assertThat(infos, hasSize(1));
+
+		MessagePropertyInfo info = infos.iterator().next();
+
+		assertThat(info.getPropertyName(), is("foo"));
+		assertThat(info.getValue(), is("bar"));
+	}
+	
+	@Test
+	public void spaceSeparator() throws Exception {
+		String content = "foo bar";
+
+		InputStream data = IOUtils.toInputStream(content, StandardCharsets.US_ASCII);
+
+		Collection<MessagePropertyInfo> infos = new AntlrBasedParser().parse(data);
 
 		assertThat(infos, hasSize(1));
 
@@ -37,7 +53,7 @@ public class PropertyParserTest {
 
 		InputStream data = IOUtils.toInputStream(content, StandardCharsets.US_ASCII);
 
-		Collection<MessagePropertyInfo> infos = new PropertyParser().parse(data);
+		Collection<MessagePropertyInfo> infos = new AntlrBasedParser().parse(data);
 
 		assertThat(infos, hasSize(1));
 
@@ -53,7 +69,7 @@ public class PropertyParserTest {
 
 		InputStream data = IOUtils.toInputStream(content, StandardCharsets.US_ASCII);
 
-		Collection<MessagePropertyInfo> infos = new PropertyParser().parse(data);
+		Collection<MessagePropertyInfo> infos = new AntlrBasedParser().parse(data);
 
 		assertThat(infos, hasSize(1));
 
@@ -69,7 +85,7 @@ public class PropertyParserTest {
 
 		InputStream data = IOUtils.toInputStream(content, StandardCharsets.US_ASCII);
 
-		Collection<MessagePropertyInfo> infos = new PropertyParser().parse(data);
+		Collection<MessagePropertyInfo> infos = new AntlrBasedParser().parse(data);
 
 		assertThat(infos, hasSize(1));
 
@@ -85,7 +101,7 @@ public class PropertyParserTest {
 
 		InputStream data = IOUtils.toInputStream(content, StandardCharsets.US_ASCII);
 
-		Collection<MessagePropertyInfo> infos = new PropertyParser().parse(data);
+		Collection<MessagePropertyInfo> infos = new AntlrBasedParser().parse(data);
 
 		assertThat(infos, hasSize(1));
 
@@ -101,7 +117,7 @@ public class PropertyParserTest {
 
 		InputStream data = IOUtils.toInputStream(content, StandardCharsets.US_ASCII);
 
-		Collection<MessagePropertyInfo> infos = new PropertyParser().parse(data);
+		Collection<MessagePropertyInfo> infos = new AntlrBasedParser().parse(data);
 
 		assertThat(infos, hasSize(1));
 
@@ -117,7 +133,7 @@ public class PropertyParserTest {
 
 		InputStream data = IOUtils.toInputStream(content, StandardCharsets.US_ASCII);
 
-		Collection<MessagePropertyInfo> infos = new PropertyParser().parse(data);
+		Collection<MessagePropertyInfo> infos = new AntlrBasedParser().parse(data);
 
 		assertThat(infos, hasSize(1));
 
@@ -133,7 +149,7 @@ public class PropertyParserTest {
 
 		InputStream data = IOUtils.toInputStream(content, StandardCharsets.US_ASCII);
 
-		Collection<MessagePropertyInfo> infos = new PropertyParser().parse(data);
+		Collection<MessagePropertyInfo> infos = new AntlrBasedParser().parse(data);
 
 		assertThat(infos, hasSize(1));
 
@@ -149,7 +165,7 @@ public class PropertyParserTest {
 
 		InputStream data = IOUtils.toInputStream(content, StandardCharsets.US_ASCII);
 
-		Collection<MessagePropertyInfo> infos = new PropertyParser().parse(data);
+		Collection<MessagePropertyInfo> infos = new AntlrBasedParser().parse(data);
 
 		assertThat(infos, hasSize(1));
 
@@ -165,7 +181,7 @@ public class PropertyParserTest {
 
 		InputStream data = IOUtils.toInputStream(content, StandardCharsets.US_ASCII);
 
-		Collection<MessagePropertyInfo> infos = new PropertyParser().parse(data);
+		Collection<MessagePropertyInfo> infos = new AntlrBasedParser().parse(data);
 
 		assertThat(infos, hasSize(1));
 
@@ -182,7 +198,7 @@ public class PropertyParserTest {
 
 		InputStream data = IOUtils.toInputStream(content, StandardCharsets.US_ASCII);
 
-		Collection<MessagePropertyInfo> infos = new PropertyParser().parse(data);
+		Collection<MessagePropertyInfo> infos = new AntlrBasedParser().parse(data);
 
 		assertThat(infos, hasSize(1));
 

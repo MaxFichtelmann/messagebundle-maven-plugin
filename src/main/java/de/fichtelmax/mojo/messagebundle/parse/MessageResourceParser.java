@@ -12,14 +12,14 @@ import de.fichtelmax.mojo.messagebundle.model.MessagePropertyInfo;
 public class MessageResourceParser {
 	public MessageBundleInfo parse(File baseDir, File file) throws IOException {
 		String packagePath = baseDir.toURI().relativize(file.getParentFile().toURI()).getPath();
-		if (packagePath.endsWith(File.separator)) {
+		if (packagePath.endsWith("/")) {
 			packagePath = packagePath.substring(0, packagePath.length() - 1);
 		}
 
-		String packageName = packagePath.replace(File.separatorChar, '.');
+		String packageName = packagePath.replace('/', '.');
 
 		MessageBundleInfo info = new MessageBundleInfo();
-		info.setBundleFileName(packagePath + File.separatorChar + file.getName());
+		info.setBundleFileName(packagePath + '/' + file.getName());
 		info.setPackageName(packageName);
 		info.setName(file.getName().replaceAll("\\..*$", ""));
 

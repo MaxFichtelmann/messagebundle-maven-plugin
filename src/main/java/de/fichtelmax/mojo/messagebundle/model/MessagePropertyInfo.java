@@ -7,7 +7,6 @@ public class MessagePropertyInfo {
 	private String propertyName;
 	private String value;
 	private String description;
-	private List<String> parameterDescriptions = new ArrayList<>();
 
 	public String getPropertyName() {
 		return propertyName;
@@ -31,13 +30,5 @@ public class MessagePropertyInfo {
 
 	public void setDescription(String description) {
 		this.description = description;
-	}
-
-	public List<String> getParameterDescriptions() {
-		return parameterDescriptions;
-	}
-
-	public void setParameterDescriptions(List<String> parameterDescriptions) {
-		this.parameterDescriptions = parameterDescriptions;
 	}
 }
