@@ -83,6 +83,7 @@ public class PropertyParser {
 					resetStateForNextLine(state);
 				}
 			}
+			state.index = 0;
 		}
 		if (!state.isCommentLine && state.line.length() > 0) {
 			addKeyValueData(info, state.line.toString(), state.description);
