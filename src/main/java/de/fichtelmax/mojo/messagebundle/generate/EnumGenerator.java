@@ -3,6 +3,8 @@ package de.fichtelmax.mojo.messagebundle.generate;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 
+import javax.annotation.Generated;
+
 import org.apache.commons.lang3.StringUtils;
 
 import com.sun.codemodel.ClassType;
@@ -39,6 +41,7 @@ public class EnumGenerator {
 			JDefinedClass _class = _package._class(JMod.PUBLIC, info.getName(), ClassType.ENUM);
 			JDocComment typeJavaDoc = _class.javadoc();
 			typeJavaDoc.add("A generated enum that wraps the {@link ResourceBundle} for " + info.getName() + '.');
+			_class.annotate( codeModel.ref( Generated.class ) ).param( "value", "messagebundle-maven-plugin" );
 
 			JFieldVar propertyNameField = _class.field(JMod.PRIVATE, String.class, "propertyName");
 			generateConstructor(_class, propertyNameField);
