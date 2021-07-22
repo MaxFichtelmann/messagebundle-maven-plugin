@@ -71,10 +71,10 @@ public class MessageBundleGenerator extends AbstractMojo {
 			}
 		}
 
+		project.addCompileSourceRoot(outputDirectory.getPath());
 		if (update) {
 			try {
 				codeModel.build(outputDirectory);
-				project.addCompileSourceRoot(outputDirectory.getPath());
 				buildContext.refresh(outputDirectory);
 			} catch (IOException e) {
 				throw new MojoFailureException("failed to write compiled files: " + e.getMessage(), e);
@@ -82,7 +82,6 @@ public class MessageBundleGenerator extends AbstractMojo {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	private List<File> collectFiles() throws MojoExecutionException {
 		if (fileset.getIncludes().isEmpty()) {
 			fileset.addInclude("messages/**/*.properties");
