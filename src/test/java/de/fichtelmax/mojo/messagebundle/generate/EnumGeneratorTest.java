@@ -28,6 +28,7 @@ import com.puppycrawl.tools.checkstyle.DefaultConfiguration;
 import com.puppycrawl.tools.checkstyle.DefaultLogger;
 import com.puppycrawl.tools.checkstyle.TreeWalker;
 import com.puppycrawl.tools.checkstyle.api.AbstractCheck;
+import com.puppycrawl.tools.checkstyle.api.AutomaticBean.OutputStreamOptions;
 import com.puppycrawl.tools.checkstyle.api.CheckstyleException;
 import com.puppycrawl.tools.checkstyle.checks.javadoc.JavadocMethodCheck;
 import com.puppycrawl.tools.checkstyle.checks.javadoc.JavadocTypeCheck;
@@ -349,7 +350,7 @@ public class EnumGeneratorTest {
 		checker.setModuleClassLoader(Thread.currentThread().getContextClassLoader());
 
 		checker.configure(root);
-		checker.addListener(new DefaultLogger(stdout, false));
+		checker.addListener(new DefaultLogger(stdout, OutputStreamOptions.NONE));
 
 		return checker;
 	}
