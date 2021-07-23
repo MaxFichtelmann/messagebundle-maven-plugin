@@ -1,8 +1,6 @@
 package de.fichtelmax.mojo.messagebundle.generate;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.arrayWithSize;
 
@@ -12,11 +10,15 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.ResourceBundle;
+
+import javax.annotation.Generated;
 
 import org.codehaus.plexus.util.FileUtils;
 import org.junit.After;
@@ -44,12 +46,14 @@ public class EnumGeneratorTest {
 	private static final String SOME_CLASS_NAME = "SomeClass";
 	private static final String SOME_BUNDLE_FILENAME = "Something.properties";
 
-	EnumGenerator cut = new EnumGenerator();
+	EnumGenerator cut;
 
 	File dir;
 
 	@Before
 	public void createDir() throws IOException {
+		cut = new EnumGenerator(false);
+
 		dir = File.createTempFile("dir", "");
 		dir.delete();
 		dir.mkdir();
@@ -90,6 +94,45 @@ public class EnumGeneratorTest {
 		Class<?> fooClass = Compiler.loadClass(name, dir);
 
 		assertThat(fooClass.isEnum(), is(true));
+	}
+	
+	@Test
+	public void classInfoShouldNotHaveGeneratedAnnotation() throws Exception {
+		String name = "Foo";
+
+		MessageBundleInfo info = new MessageBundleInfo();
+		info.setBundleFileName(SOME_BUNDLE_FILENAME);
+		info.setName(name);
+
+		JCodeModel codeModel = new JCodeModel();
+		cut.transformToEnumInfo(info, codeModel);
+
+		codeModel.build(dir);
+		
+		byte[] bytes = Files.readAllBytes( new File(dir, name + ".java").toPath() );
+		String fileContent = new String(bytes, StandardCharsets.UTF_8);
+		
+		assertThat(fileContent.contains( "@Generated" ), is(false));
+	}
+	
+	@Test
+	public void classInfoShouldHaveGeneratedAnnotationIfConfigured() throws Exception {
+		String name = "Foo";
+		cut = new EnumGenerator(true);
+
+		MessageBundleInfo info = new MessageBundleInfo();
+		info.setBundleFileName(SOME_BUNDLE_FILENAME);
+		info.setName(name);
+
+		JCodeModel codeModel = new JCodeModel();
+		cut.transformToEnumInfo(info, codeModel);
+
+		codeModel.build(dir);
+		
+		byte[] bytes = Files.readAllBytes( new File(dir, name + ".java").toPath() );
+		String fileContent = new String(bytes, StandardCharsets.UTF_8);
+		
+		assertThat(fileContent.contains( "@Generated" ), is(true));
 	}
 
 	@Test

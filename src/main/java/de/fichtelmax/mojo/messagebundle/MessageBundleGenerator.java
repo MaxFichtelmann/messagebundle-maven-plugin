@@ -42,12 +42,16 @@ public class MessageBundleGenerator extends AbstractMojo {
 
 	@Parameter(defaultValue = "${project}", readonly = true)
 	private MavenProject project;
+	
+	@Parameter(defaultValue = "false")
+	private boolean generatedAnnotation;
 
-	private EnumGenerator generator = new EnumGenerator();
 	private MessageResourceParser parser = new MessageResourceParser();
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
+		EnumGenerator generator = new EnumGenerator(generatedAnnotation);
+
 		outputDirectory.mkdirs();
 
 		File sourceDir = locateSourceDir();

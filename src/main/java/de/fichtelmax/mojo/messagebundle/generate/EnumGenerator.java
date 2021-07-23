@@ -26,7 +26,13 @@ import de.fichtelmax.mojo.messagebundle.model.MessagePropertyInfo;
 
 public class EnumGenerator {
 
-	private EnumPropertyGenerator propertyGenerator = new EnumPropertyGenerator();
+	private final EnumPropertyGenerator propertyGenerator = new EnumPropertyGenerator();
+	private final boolean withGeneratedAnnotation;
+	
+	public EnumGenerator( boolean withGeneratedAnnotation )
+	{
+		this.withGeneratedAnnotation = withGeneratedAnnotation;
+	}
 
 	public void transformToEnumInfo(MessageBundleInfo info, JCodeModel codeModel) {
 		JPackage _package;
@@ -41,7 +47,9 @@ public class EnumGenerator {
 			JDefinedClass _class = _package._class(JMod.PUBLIC, info.getName(), ClassType.ENUM);
 			JDocComment typeJavaDoc = _class.javadoc();
 			typeJavaDoc.add("A generated enum that wraps the {@link ResourceBundle} for " + info.getName() + '.');
-			_class.annotate( codeModel.ref( Generated.class ) ).param( "value", "messagebundle-maven-plugin" );
+			if (withGeneratedAnnotation) {
+				_class.annotate( codeModel.ref( Generated.class ) ).param( "value", "messagebundle-maven-plugin" );
+			}
 
 			JFieldVar propertyNameField = _class.field(JMod.PRIVATE, String.class, "propertyName");
 			generateConstructor(_class, propertyNameField);
